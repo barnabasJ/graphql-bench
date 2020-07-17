@@ -10,6 +10,11 @@ import multiprocessing
 
 import sys
 import os
+import pprint
+
+pp = pprint.PrettyPrinter(indent=4)
+
+import json
 
 from plot import run_dash_server
 
@@ -51,11 +56,14 @@ def runWrk2(url, queriesFile, query, rps, openConns, duration, luaScript):
             eprint(l, 3)
         return None
     else:
+        print(p.stdout)
+        print(p.stderr)
         for l in p.stdout.splitlines():
             eprint(l, 3)
         return json.loads(p.stderr)
 
 def benchCandidate(url, queriesFile, query, rpsList, openConns, duration, luaScript):
+    print(rpsList)
     results = {}
     for rps in rpsList:
         eprint("+" * 20, 3)
@@ -105,6 +113,8 @@ def benchQuery(benchParams):
         candidateRes = benchCandidate(candidateUrl, candidateQueriesFile, candidateQuery,
                                       rpsList, openConns, duration, candidateLuaScript)
         results[candidateName] = candidateRes
+        pp.pprint(results)
+        pp.pprint(benchName)
 
     return {
         "benchmark": benchName,
@@ -122,6 +132,9 @@ def bench(args):
     results = []
     for benchSpec in benchSpecs:
         results.append(benchQuery(benchSpec))
+    pp.pprint(results)
+    with open('/vol/data.json', 'w') as f:
+        json.dump(results, f)
     return results
 
 if __name__ == "__main__":
